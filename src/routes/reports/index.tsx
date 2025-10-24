@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TestForm } from '@/components/forms/Test-form'
 
-export const Route = createFileRoute('/forms/')({
+export const Route = createFileRoute('/reports/')({
   component: RouteComponent,
 })
 

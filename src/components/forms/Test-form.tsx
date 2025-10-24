@@ -45,7 +45,7 @@ const formSchema = z.object({
     .string()
     .min(20, 'Description must be at least 20 characters.')
     .max(100, 'Description must be at most 100 characters.'),
-  isActive: z.boolean(),
+  canReproduce: z.boolean(),
   bugType: z.enum(
     ['UI/UX', 'Functionality', 'Performance', 'Security'],
     'Please select an option',
@@ -55,7 +55,7 @@ const formSchema = z.object({
 type FormData = {
   title: string
   description: string
-  isActive: boolean
+  canReproduce: boolean
   bugType: '' | 'UI/UX' | 'Functionality' | 'Performance' | 'Security'
 }
 
@@ -64,7 +64,7 @@ export const TestForm = () => {
     defaultValues: {
       title: '',
       description: '',
-      isActive: true,
+      canReproduce: true,
       bugType: '',
     },
     validators: {
@@ -167,7 +167,7 @@ export const TestForm = () => {
               }}
             />
             <form.Field
-              name="isActive"
+              name="canReproduce"
               children={(field) => {
                 return (
                   <FieldGroup>
@@ -183,7 +183,7 @@ export const TestForm = () => {
                         }
                       />
                       <FieldLabel htmlFor={field.name}>
-                        Is the Bug active
+                        I can consistently reproduce this bug
                       </FieldLabel>
                     </Field>
                   </FieldGroup>
