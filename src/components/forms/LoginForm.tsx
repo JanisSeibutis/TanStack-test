@@ -1,7 +1,7 @@
 import { useForm } from '@tanstack/react-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-import { useState } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/supabaseClient'
 
 const formSchema = z.object({
-  email: z.string().email('Please enter a valid email address.'),
+  email: z.email('Please enter a valid email address.'),
   password: z.string().min(6, 'Password must be at least 6 characters long.'),
 })
 
@@ -32,8 +32,8 @@ type FormData = {
   password: string
 }
 
-export const Login = () => {
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
+export const LoginForm = () => {
+  const navigate = useNavigate()
 
   const form = useForm({
     defaultValues: {
@@ -45,24 +45,12 @@ export const Login = () => {
     },
     onSubmit: async ({ value }: { value: FormData }) => {
       const { email, password } = value
-      if (mode == 'login') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (error) {
-          toast.error(error.message, {
-            position: 'top-center',
-            classNames: {
-              content: 'flex m-auto',
-            },
-            style: {
-              '--border-radius': 'calc(var(--radius)  + 4px)',
-            } as React.CSSProperties,
-          })
-          return
-        }
-        toast.success('You are now logged in and can create a report.', {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) {
+        toast.error(error.message, {
           position: 'top-center',
           classNames: {
             content: 'flex m-auto',
@@ -71,56 +59,25 @@ export const Login = () => {
             '--border-radius': 'calc(var(--radius)  + 4px)',
           } as React.CSSProperties,
         })
+        return
       }
-      if (mode == 'signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-        })
-
-        if (error) {
-          toast.error(error.message, {
-            position: 'top-center',
-            classNames: {
-              content: 'flex m-auto',
-            },
-            style: {
-              '--border-radius': 'calc(var(--radius)  + 4px)',
-            } as React.CSSProperties,
-          })
-          return
-        }
-
-        const user = data.user
-
-        if (user) {
-          const { error: insertError } = await supabase.from('user').insert({
-            id: user.id,
-            email: user.email,
-          })
-          if (insertError) {
-            toast.error(insertError.message)
-            return
-          }
-        }
-
-        toast.success('You are now signed up and can create a report.', {
-          position: 'top-center',
-          classNames: {
-            content: 'flex m-auto',
-          },
-          style: {
-            '--border-radius': 'calc(var(--radius)  + 4px)',
-          } as React.CSSProperties,
-        })
-      }
+      toast.success('You are now logged in and can create a report.', {
+        position: 'top-center',
+        classNames: {
+          content: 'flex m-auto',
+        },
+        style: {
+          '--border-radius': 'calc(var(--radius)  + 4px)',
+        } as React.CSSProperties,
+      })
+      navigate({ to: '/reports' })
     },
   })
 
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>{mode == 'login' ? 'Login' : 'Create account'}</CardTitle>
+        <CardTitle>Log in</CardTitle>
         <CardDescription>Please provide email and password.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -171,11 +128,11 @@ export const Login = () => {
                     <Input
                       id={field.name}
                       name={field.name}
+                      type="password"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
-                      autoComplete="on"
                     />
 
                     {isInvalid && (
@@ -185,24 +142,9 @@ export const Login = () => {
                 )
               }}
             />
-            {mode == 'login' && (
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => setMode('signup')}
-              >
-                Dont have account yet? Click here to create one.
-              </Button>
-            )}
-            {mode == 'signup' && (
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => setMode('login')}
-              >
-                Have account? Click here to log in.
-              </Button>
-            )}
+            <Button type="button" variant="link">
+              <Link to="/auth/signup">Don't have account? Sign up</Link>
+            </Button>
           </FieldGroup>
         </form>
       </CardContent>
@@ -212,7 +154,7 @@ export const Login = () => {
             Reset
           </Button>
           <Button type="submit" form="login-form">
-            {mode == 'login' ? 'Log in' : 'Sign up'}
+            Log in
           </Button>
         </Field>
       </CardFooter>
